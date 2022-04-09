@@ -16,6 +16,13 @@ const nav = document.querySelector('nav')
 //?Results Section
 const section = document.querySelector('section')
 
+
 nav.style.display = 'none'
 let pageNumber = 0
 let displayNav = false
+
+//! Add event listeners
+
+searchForm.addEventListener('submit', fetchResults)
+nextBtn.addEventListener('click', nextPage)
+previousBtn.addEventListener('click', previousPage)
