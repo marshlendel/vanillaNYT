@@ -15,3 +15,7 @@ const nav = document.querySelector('nav')
 
 //?Results Section
 const section = document.querySelector('section')
+
+nav.style.display = 'none'
+let pageNumber = 0
+let displayNav = false
