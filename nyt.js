@@ -17,6 +17,7 @@ const nav = document.querySelector("nav");
 const section = document.querySelector("section");
 
 nav.style.display = "none";
+previousBtn.style.display = "none";
 let pageNumber = 0;
 let displayNav = false;
 
@@ -31,81 +32,85 @@ previousBtn.addEventListener("click", previousPage);
 function fetchResults(e) {
   e.preventDefault();
   //assemble full URL
-  url =
-    baseURL +
-    "?api-key=" +
-    key +
-    "&page=" +
-    pageNumber +
-    "&q=" +
-    searchTerm.value;
-
-    searchTerm.value = ""
+  url = `${baseURL}?api-key=${key}&page=${pageNumber}&q=${searchTerm.value}`;
 
   if (startDate.value !== "") {
-    url += "&begin_date=" + startDate.value;
+    url += `&begin_date=${startDate.value}`;
   }
 
   if (endDate.value !== "") {
-    url += "&end_date=" + endDate.value;
+    url += `&end_date=${endDate.value}`;
   }
 
   fetch(url)
     .then((res) => res.json())
     .then((json) => {
-        displayResults(json)
+      displayResults(json);
     });
 }
 
 function displayResults(json) {
-    let articles = json.response.docs
-    
-    if(articles.length >= 10) {
-        while(section.firstChild) {
-            section.removeChild(section.firstChild)
+  let articles = json.response.docs;
+
+  if (articles.length >= 10) {
+    while (section.firstChild) {
+      section.removeChild(section.firstChild);
+    }
+
+    nav.style.display = "block";
+  } else {
+    nav.style.display = "none";
+  }
+
+  articles.length === 0
+    ? console.log("no results")
+    : articles.forEach((doc) => {
+        let article = document.createElement("article");
+        let heading = document.createElement("h2");
+        let img = document.createElement("img");
+        let link = document.createElement("a");
+        let para = document.createElement("p");
+        let clearfix = document.createElement("div");
+
+        link.href = doc.web_url;
+        link.target = "_blank";
+        link.textContent = doc.headline.main;
+        para.textContent = "Keywords";
+
+        doc.keywords.forEach((keyword) => {
+          let span = document.createElement("span");
+          span.textContent = keyword.value + " ";
+          para.appendChild(span);
+        });
+
+        if (doc.multimedia.length > 0) {
+          img.src = `http://www.nytimes.com/${doc.multimedia[0].url}`;
+          img.alt = doc.headline.main;
         }
 
-        nav.style.display = "block"
-    } else {
-        nav.style.display = "none"
-    }
+        clearfix.setAttribute("class", "clearfix");
 
-    if(articles.length === 0) {
-        console.log("no results")
-    } else {
-        articles.forEach((doc) => {
-            let article = document.createElement('article')
-            let heading = document.createElement("h2")
-            let link = document.createElement("a")
-            let para = document.createElement("p")
-            let clearfix = document.createElement("div")
-
-            link.href = doc.web_url
-            link.target="_blank"
-            link.textContent = doc.headline.main
-            para.textContent = "Keywords"
-            
-             doc.keywords.forEach(keyword => {
-                let span = document.createElement("span")
-                span.textContent = keyword.value + ' ';
-                para.appendChild(span)
-            })
-
-            clearfix.setAttribute('class', 'clearfix')
-
-            article.appendChild(heading)
-            heading.appendChild(link)
-            article.appendChild(para)
-            article.appendChild(clearfix)
-            section.appendChild(article)
-        })
-    }
+        article.appendChild(heading);
+        heading.appendChild(link);
+        article.appendChild(img);
+        article.appendChild(para);
+        article.appendChild(clearfix);
+        section.appendChild(article);
+      });
 }
 
-function nextPage() {
-  console.log("next button clicked");
+function nextPage(e) {
+  pageNumber++;
+  if (pageNumber > 0) {
+    previousBtn.style.display = "inline-block";
+  }
+  fetchResults(e);
 }
 
-function previousPage() {
-  console.log("previous button clicked");
+function previousPage(e) {
+  pageNumber--;
+  if (pageNumber === 0) {
+    previousBtn.style.display = "none";
+  }
+  fetchResults(e);
 }
